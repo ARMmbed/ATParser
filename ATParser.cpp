@@ -229,7 +229,7 @@ bool ATParser::vrecv(const char *response, va_list args)
         int j = 0;
 
         while (true) {
-            // Recieve next character
+            // Receive next character
             int c = getc();
             if (c < 0) {
                 return false;
@@ -238,15 +238,15 @@ bool ATParser::vrecv(const char *response, va_list args)
             _buffer[offset + j] = 0;
 
             // Check for oob data
-            for (int k = 0; k < _oobs.size(); k++) {
-                if (j == _oobs[k].len && memcmp(
+            for (unsigned int k = 0; k < _oobs.size(); k++) {
+                if (j == (int)_oobs[k].len && memcmp(
                         _oobs[k].prefix, _buffer+offset, _oobs[k].len) == 0) {
                     debug_if(dbg_on, "AT! %s\r\n", _oobs[k].prefix);
                     _oobs[k].cb();
 
                     // oob may have corrupted non-reentrant buffer,
                     // so we need to set it up again
-                    return vrecv(response, args);
+                    return vrecv(response, args); // betzw: recursion really needed (why not using `goto` to function entry)?
                 }
             }
 
