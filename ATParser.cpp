@@ -177,9 +177,9 @@ bool ATParser::vsend(const char *command, va_list args)
         }
     }
 
-    // Finish with newline
-    for (int i = 0; _delimiter[i]; i++) {
-        if (putc(_delimiter[i]) < 0) {
+    // Finish with command line delimiter
+    for (int i = 0; _cmd_delimiter[i]; i++) {
+        if (putc(_cmd_delimiter[i]) < 0) {
             return false;
         }
     }

@@ -54,6 +54,7 @@ private:
     int _timeout;
 
     // Parsing information
+    const char *_cmd_delimiter;
     const char *_delimiter;
     int _delim_size;
     bool dbg_on;
@@ -72,13 +73,15 @@ public:
     * @param serial serial interface to use for AT commands
     * @param buffer_size size of internal buffer for transaction
     * @param timeout timeout of the connection
-    * @param delimiter string of characters to use as line delimiters
+    * @param cmd_delimiter string of characters to use as command line delimiters
+    * @param delimiter string of characters to use as (receive) line delimiters
     */
-    ATParser(BufferedSerial &serial, const char *delimiter = "\r\n", int buffer_size = 256, int timeout = 8000, bool debug = false) :
+    ATParser(BufferedSerial &serial, const char *cmd_delimiter = "\r\n", const char *delimiter = "\r\n", int buffer_size = 256, int timeout = 8000, bool debug = false) :
         _serial(&serial),
         _buffer_size(buffer_size) {
         _buffer = new char[buffer_size];
         setTimeout(timeout);
+        setCmdDelimiter(cmd_delimiter);
         setDelimiter(delimiter);
         debugOn(debug);
     }
@@ -97,6 +100,15 @@ public:
     */
     void setTimeout(int timeout) {
         _timeout = timeout;
+    }
+
+    /**
+    * Sets string of characters to use as command line delimiters
+    *
+    * @param delimiter string of characters to use as command line delimiters
+    */
+    void setCmdDelimiter(const char *delimiter) {
+        _cmd_delimiter = delimiter;
     }
 
     /**
