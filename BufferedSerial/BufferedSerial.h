@@ -91,7 +91,7 @@ public:
      *  @param name optional name
      *  @note Either tx or rx may be specified as NC if unused
      */
-    BufferedSerial(PinName tx, PinName rx, uint32_t buf_size = 256, uint32_t tx_multiple = 4,const char* name=NULL);
+    BufferedSerial(PinName tx, PinName rx, uint32_t buf_size = 256, uint32_t tx_multiple = 4,const char* name=NULL, int baud=MBED_CONF_PLATFORM_DEFAULT_SERIAL_BAUD_RATE);
     
     /** Destroy a BufferedSerial port
      */
