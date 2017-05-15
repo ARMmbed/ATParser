@@ -255,7 +255,8 @@ bool ATParser::vrecv(const char *response, va_list args)
             sscanf(_buffer+offset, _buffer, &count);
 
             // We only succeed if all characters in the response are matched
-            if (count == j) {
+            // and we are at the end of the response
+            if ((count == j) && (response[i-1] == (const char)c)) {
                 debug_if(dbg_on, "AT= %s\r\n", _buffer+offset);
                 // Reuse the front end of the buffer
                 memcpy(_buffer, response, i);
@@ -271,8 +272,8 @@ bool ATParser::vrecv(const char *response, va_list args)
 
             // Clear the buffer when we hit a newline or ran out of space
             // running out of space usually means we ran into binary data
-            if (j+1 >= _buffer_size - offset ||
-                strcmp(&_buffer[offset + j-_delim_size], _delimiter) == 0) {
+            if ((j+1 >= _buffer_size - offset) ||
+                (strcmp(&_buffer[offset + j-_delim_size], _delimiter) == 0)) {
 
                 debug_if(dbg_on, "AT< %s", _buffer+offset);
                 j = 0;
