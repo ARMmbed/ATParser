@@ -22,7 +22,7 @@
 
 #include "mbed.h"
 #include <cstdarg>
-#include <vector>
+#include <map>
 #include "BufferedSerial.h"
 #include "Callback.h"
 
@@ -58,12 +58,7 @@ private:
     int _delim_size;
     bool dbg_on;
 
-    struct oob {
-        unsigned len;
-        const char *prefix;
-        mbed::Callback<void()> cb;
-    };
-    std::vector<oob> _oobs;
+    std::map<const char *, mbed::Callback<void()> > _oobs;
 
 public:
     /**
