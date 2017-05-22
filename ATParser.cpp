@@ -275,7 +275,9 @@ bool ATParser::vrecv(const char *response, va_list args)
             if ((j+1 >= _buffer_size - offset) ||
                 (strcmp(&_buffer[offset + j-_delim_size], _delimiter) == 0)) {
 
-                debug_if(dbg_on, "AT< %s", _buffer+offset);
+                if(strcmp(_buffer+offset, "\r\n") > 0) {
+                    debug_if(true, "AT< %s", _buffer+offset);
+                }
                 j = 0;
             }
         }
