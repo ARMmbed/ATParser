@@ -107,6 +107,11 @@ public:
      */
     virtual int writeable(void);
     
+    /** Check on how many bytes are in the tx buffer
+     *  @return 1 if something exists, 0 otherwise
+     */
+    virtual int pending(void);
+
     /** Get a single byte from the BufferedSerial Port.
      *  Should check readable() before calling this.
      *  @return A byte that came in on the Serial Port

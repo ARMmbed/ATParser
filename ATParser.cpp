@@ -142,7 +142,7 @@ int ATParser::vscanf(const char *format, va_list args)
         if (j+1 >= _buffer_size - offset) {
             return false;
         }
-        // Recieve next character
+        // Receive next character
         int c = getc();
         if (c < 0) {
             return -1;
@@ -155,7 +155,8 @@ int ATParser::vscanf(const char *format, va_list args)
         sscanf(_buffer+offset, _buffer, &count);
 
         // We only succeed if all characters in the response are matched
-        if (count == j) {
+        // and we are at the end of the response
+        if ((count == j) && (format[i-1] == (const char)c)) {
             // Store the found results
             vsscanf(_buffer+offset, format, args);
             return j;
@@ -273,7 +274,7 @@ restart:
 
             // Clear the buffer when we hit a newline or ran out of space
             // running out of space usually means we ran into binary data
-            if ((j+1 >= _buffer_size - offset) ||
+            if (((j+1) >= (_buffer_size - offset)) ||
                 (strcmp(&_buffer[offset + j-_delim_size], _delimiter) == 0)) {
 
                 if(strcmp(_buffer+offset, "\r\n") > 0) {
