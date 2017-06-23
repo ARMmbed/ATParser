@@ -18,6 +18,8 @@
  *
  */
 
+#include <ctype.h>
+
 #include "ATParser.h"
 #include "mbed_debug.h"
 
@@ -189,6 +191,13 @@ bool ATParser::vsend(const char *command, va_list args)
     return true;
 }
 
+static bool is_printable(char *buf) {
+    for(int i = 0;buf[i] != 0; i++) {
+        if(!isascii(buf[i])) return false;
+    }
+    return true;
+}
+
 bool ATParser::vrecv(const char *response, va_list args)
 {
 restart:
@@ -278,7 +287,11 @@ restart:
                 (strcmp(&_buffer[offset + j-_delim_size], _delimiter) == 0)) {
 
                 if(strcmp(_buffer+offset, "\r\n") > 0) {
-                    debug_if(true, "AT< %s", _buffer+offset); // betzw - TODO: `true` only for debug!
+                    if(is_printable(_buffer+offset)) {
+                        debug_if(true, "AT< %s", _buffer+offset); // betzw - TODO: `true` only for debug!
+                    } else {
+                        debug_if(true, "AT< [raw data]\r\n"); // betzw - TODO: `true` only for debug!
+                    }
                 }
                 j = 0;
             }
