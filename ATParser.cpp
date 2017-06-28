@@ -288,7 +288,7 @@ restart:
 
                 if(strcmp(_buffer+offset, "\r\n") > 0) {
                     if(is_printable(_buffer+offset)) {
-                        debug_if(true, "AT< %s", _buffer+offset); // betzw - TODO: `true` only for debug!
+                        debug_if(true, "AT< %s", (_buffer[offset] != '\r') ? _buffer+offset : _buffer+offset+1); // betzw - TODO: `true` only for debug!
                     } else {
                         debug_if(true, "AT< [raw data]\r\n"); // betzw - TODO: `true` only for debug!
                     }
