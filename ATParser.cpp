@@ -190,6 +190,7 @@ bool ATParser::vsend(const char *command, va_list args)
 
 bool ATParser::vrecv(const char *response, va_list args)
 {
+vrecv_start:
     // Iterate through each line in the expected response
     while (response[0]) {
         // Since response is const, we need to copy it into our buffer to
@@ -245,8 +246,10 @@ bool ATParser::vrecv(const char *response, va_list args)
                     _oobs[k].cb();
 
                     // oob may have corrupted non-reentrant buffer,
-                    // so we need to set it up again
-                    return vrecv(response, args);
+                    // so we need to set it up again.
+                    // Use goto to save stack usage rather than a
+                    // recursive approach.
+                    goto vrecv_start;
                 }
             }
 
