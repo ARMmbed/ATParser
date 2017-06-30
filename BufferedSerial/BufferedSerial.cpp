@@ -52,10 +52,6 @@ int BufferedSerial::writeable(void)
     return 1;   // buffer allows overwriting by design, always true
 }
 
-int BufferedSerial::pending(void) {
-    return _txbuf.available();  // note: look if things are in the buffer
-}
-
 int BufferedSerial::getc(void)
 {
     return _rxbuf;
