@@ -178,8 +178,8 @@ bool ATParser::vsend(const char *command, va_list args)
     }
 
     // Finish with newline
-    for (int i = 0; _delimiter[i]; i++) {
-        if (putc(_delimiter[i]) < 0) {
+    for (int i = 0; _send_delimiter[i]; i++) {
+        if (putc(_send_delimiter[i]) < 0) {
             return false;
         }
     }
@@ -201,7 +201,7 @@ vrecv_start:
         int offset = 0;
 
         while (response[i]) {
-            if (memcmp(&response[i+1-_delim_size], _delimiter, _delim_size) == 0) {
+            if (memcmp(&response[i+1-_recv_delim_size], _recv_delimiter, _recv_delim_size) == 0) {
                 i++;
                 break;
             } else if (response[i] == '%' && response[i+1] != '%' && response[i+1] != '*') {
@@ -275,7 +275,7 @@ vrecv_start:
             // Clear the buffer when we hit a newline or ran out of space
             // running out of space usually means we ran into binary data
             if (j+1 >= _buffer_size - offset ||
-                strcmp(&_buffer[offset + j-_delim_size], _delimiter) == 0) {
+                strcmp(&_buffer[offset + j-_recv_delim_size], _recv_delimiter) == 0) {
 
                 debug_if(dbg_on, "AT< %s", _buffer+offset);
                 j = 0;
