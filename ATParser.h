@@ -100,6 +100,13 @@ public:
     }
 
     /**
+    * Retrieve the timeout between commands
+    */
+    int getTimeout() {
+        return _timeout;
+    }
+
+    /**
     * Sets string of characters to use as line delimiters
     *
     * @param delimiter string of characters to use as line delimiters
@@ -108,7 +115,7 @@ public:
         _delimiter = delimiter;
         _delim_size = strlen(delimiter);
     }
-    
+
     /**
     * Allows echo to be on or off
     *
@@ -206,7 +213,7 @@ public:
 
     /**
     * Attach a callback for out-of-band data
-    * 
+    *
     * @param prefix string on when to initiate callback
     * @param func callback to call when string is read
     * @note out-of-band data is only processed during a scanf call
@@ -230,5 +237,6 @@ public:
     * Flushes the underlying stream
     */
     void flush();
+
 };
 #endif

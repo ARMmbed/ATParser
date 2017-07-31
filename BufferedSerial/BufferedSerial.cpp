@@ -28,9 +28,9 @@ extern "C" int BufferedPrintfC(void *stream, int size, const char* format, va_li
 BufferedSerial::BufferedSerial(PinName tx, PinName rx, uint32_t buf_size, uint32_t tx_multiple, const char* name)
     : RawSerial(tx, rx) , _rxbuf(buf_size), _txbuf((uint32_t)(tx_multiple*buf_size))
 {
-    RawSerial::attach(this, &BufferedSerial::rxIrq, Serial::RxIrq);
+    RawSerial::attach(callback(this, &BufferedSerial::rxIrq), Serial::RxIrq);
     this->_buf_size = buf_size;
-    this->_tx_multiple = tx_multiple;   
+    this->_tx_multiple = tx_multiple;
     return;
 }
 
@@ -69,13 +69,13 @@ int BufferedSerial::puts(const char *s)
 {
     if (s != NULL) {
         const char* ptr = s;
-    
+
         while(*(ptr) != 0) {
             _txbuf = *(ptr++);
         }
         _txbuf = '\n';  // done per puts definition
         BufferedSerial::prime();
-    
+
         return (ptr - s) + 1;
     }
     return 0;
@@ -101,12 +101,12 @@ ssize_t BufferedSerial::write(const void *s, size_t length)
     if (s != NULL && length > 0) {
         const char* ptr = (const char*)s;
         const char* end = ptr + length;
-    
+
         while (ptr != end) {
             _txbuf = *(ptr++);
         }
         BufferedSerial::prime();
-    
+
         return ptr - (const char*)s;
     }
     return 0;
@@ -117,10 +117,11 @@ void BufferedSerial::rxIrq(void)
 {
     // read from the peripheral and make sure something is available
     if(serial_readable(&_serial)) {
-        _rxbuf = serial_getc(&_serial); // if so load them into a buffer
+        int v = serial_getc(&_serial);
+        _rxbuf = v; // if so load them into a buffer
         // trigger callback if necessary
         if (_cbs[RxIrq]) {
-            _cbs[RxIrq]();
+            _cbs[RxIrq](v);
         }
     }
 
@@ -138,7 +139,7 @@ void BufferedSerial::txIrq(void)
             RawSerial::attach(NULL, RawSerial::TxIrq);
             // trigger callback if necessary
             if (_cbs[TxIrq]) {
-                _cbs[TxIrq]();
+                _cbs[TxIrq](0);
             }
             break;
         }
@@ -153,13 +154,13 @@ void BufferedSerial::prime(void)
     if(serial_writable(&_serial)) {
         RawSerial::attach(NULL, RawSerial::TxIrq);    // make sure not to cause contention in the irq
         BufferedSerial::txIrq();                // only write to hardware in one place
-        RawSerial::attach(this, &BufferedSerial::txIrq, RawSerial::TxIrq);
+        RawSerial::attach(callback(this, &BufferedSerial::txIrq), RawSerial::TxIrq);
     }
 
     return;
 }
 
-void BufferedSerial::attach(Callback<void()> func, IrqType type)
+void BufferedSerial::attach(Callback<void(int)> func, IrqType type)
 {
     _cbs[type] = func;
 }
