@@ -180,9 +180,9 @@ bool ATParser::vsend(const char *command, va_list args)
         }
     }
 
-    // Finish with command line delimiter
-    for (int i = 0; _cmd_delimiter[i]; i++) {
-        if (putc(_cmd_delimiter[i]) < 0) {
+    // Finish with newline
+    for (int i = 0; _send_delimiter[i]; i++) {
+        if (putc(_send_delimiter[i]) < 0) {
             return false;
         }
     }
@@ -200,7 +200,7 @@ static bool is_printable(char *buf) {
 
 bool ATParser::vrecv(const char *response, va_list args)
 {
-restart:
+vrecv_start:
     // Iterate through each line in the expected response
     while (response[0]) {
         // Since response is const, we need to copy it into our buffer to
@@ -211,7 +211,7 @@ restart:
         int offset = 0;
 
         while (response[i]) {
-            if (memcmp(&response[i+1-_delim_size], _delimiter, _delim_size) == 0) {
+            if (memcmp(&response[i+1-_recv_delim_size], _recv_delimiter, _recv_delim_size) == 0) {
                 i++;
                 break;
             } else if (response[i] == '%' && response[i+1] != '%' && response[i+1] != '*') {
@@ -256,8 +256,10 @@ restart:
                     _oobs[k].cb();
 
                     // oob may have corrupted non-reentrant buffer,
-                    // so we need to set it up again
-                    goto restart;
+                    // so we need to set it up again.
+                    // Use goto to save stack usage rather than a
+                    // recursive approach.
+                    goto vrecv_start;
                 }
             }
 
@@ -283,8 +285,8 @@ restart:
 
             // Clear the buffer when we hit a newline or ran out of space
             // running out of space usually means we ran into binary data
-            if (((j+1) >= (_buffer_size - offset)) ||
-                (strcmp(&_buffer[offset + j-_delim_size], _delimiter) == 0)) {
+            if (j+1 >= _buffer_size - offset ||
+                strcmp(&_buffer[offset + j-_recv_delim_size], _recv_delimiter) == 0) {
 
                 if(strcmp(_buffer+offset, "\r\n") > 0) {
                     if(is_printable(_buffer+offset)) {

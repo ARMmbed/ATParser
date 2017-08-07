@@ -54,9 +54,10 @@ private:
     int _timeout;
 
     // Parsing information
-    const char *_cmd_delimiter;
-    const char *_delimiter;
-    int _delim_size;
+    const char *_recv_delimiter;
+    const char *_send_delimiter;
+    int _recv_delim_size;
+    int _send_delim_size;
     bool dbg_on;
 
     struct oob {
@@ -73,15 +74,32 @@ public:
     * @param serial serial interface to use for AT commands
     * @param buffer_size size of internal buffer for transaction
     * @param timeout timeout of the connection
-    * @param cmd_delimiter string of characters to use as command line delimiters
-    * @param delimiter string of characters to use as (receive) line delimiters
+    * @param send_delimiter string of characters to use as line delimiters for sending
+    * @param recv_delimiter string of characters to use as line delimiters for receiving
     */
-    ATParser(BufferedSerial &serial, const char *cmd_delimiter = "\r\n", const char *delimiter = "\r\n", int buffer_size = 256, int timeout = 8000, bool debug = false) :
+    ATParser(BufferedSerial &serial, const char *recv_delimiter, const char *send_delimiter, int buffer_size = 256, int timeout = 8000, bool debug = false) :
         _serial(&serial),
         _buffer_size(buffer_size) {
         _buffer = new char[buffer_size];
         setTimeout(timeout);
-        setCmdDelimiter(cmd_delimiter);
+        setRecvDelimiter(recv_delimiter);
+        setSendDelimiter(send_delimiter);
+        debugOn(debug);
+    }
+
+    /**
+    * Constructor
+    *
+    * @param serial serial interface to use for AT commands
+    * @param buffer_size size of internal buffer for transaction
+    * @param timeout timeout of the connection
+    * @param delimiter string of characters to use as line delimiters
+    */
+    ATParser(BufferedSerial &serial, const char *delimiter = "\r\n", int buffer_size = 256, int timeout = 8000, bool debug = false) :
+        _serial(&serial),
+        _buffer_size(buffer_size) {
+        _buffer = new char[buffer_size];
+        setTimeout(timeout);
         setDelimiter(delimiter);
         debugOn(debug);
     }
@@ -103,24 +121,37 @@ public:
     }
 
     /**
-    * Sets string of characters to use as command line delimiters
-    *
-    * @param delimiter string of characters to use as command line delimiters
-    */
-    void setCmdDelimiter(const char *delimiter) {
-        _cmd_delimiter = delimiter;
-    }
-
-    /**
     * Sets string of characters to use as line delimiters
     *
     * @param delimiter string of characters to use as line delimiters
     */
     void setDelimiter(const char *delimiter) {
-        _delimiter = delimiter;
-        _delim_size = strlen(delimiter);
+        _recv_delimiter = delimiter;
+        _send_delimiter = delimiter;
+        _recv_delim_size = strlen(delimiter);
+        _send_delim_size = strlen(delimiter);
     }
-    
+
+    /**
+    * Sets string of characters to use as line delimiters for receiving
+    *
+    * @param delimiter string of characters to use as line delimiters
+    */
+    void setRecvDelimiter(const char *delimiter) {
+        _recv_delimiter = delimiter;
+        _recv_delim_size = strlen(delimiter);
+    }
+
+    /**
+    * Sets string of characters to use as line delimiters for sending
+    *
+    * @param delimiter string of characters to use as line delimiters
+    */
+    void setSendDelimiter(const char *delimiter) {
+        _send_delimiter = delimiter;
+        _send_delim_size = strlen(delimiter);
+    }
+
     /**
     * Allows echo to be on or off
     *
@@ -218,7 +249,7 @@ public:
 
     /**
     * Attach a callback for out-of-band data
-    * 
+    *
     * @param prefix string on when to initiate callback
     * @param func callback to call when string is read
     * @note out-of-band data is only processed during a scanf call
