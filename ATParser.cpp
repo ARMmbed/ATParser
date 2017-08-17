@@ -142,7 +142,7 @@ int ATParser::vscanf(const char *format, va_list args)
         if (j+1 >= _buffer_size - offset) {
             return false;
         }
-        // Recieve next character
+        // Receive next character
         int c = getc();
         if (c < 0) {
             return -1;
@@ -230,7 +230,7 @@ vrecv_start:
         int j = 0;
 
         while (true) {
-            // Recieve next character
+            // Receive next character
             int c = getc();
             if (c < 0) {
                 return false;
@@ -239,8 +239,8 @@ vrecv_start:
             _buffer[offset + j] = 0;
 
             // Check for oob data
-            for (int k = 0; k < _oobs.size(); k++) {
-                if (j == _oobs[k].len && memcmp(
+            for (unsigned int k = 0; k < _oobs.size(); k++) {
+                if (j == (int)_oobs[k].len && memcmp(
                         _oobs[k].prefix, _buffer+offset, _oobs[k].len) == 0) {
                     debug_if(dbg_on, "AT! %s\r\n", _oobs[k].prefix);
                     _oobs[k].cb();
