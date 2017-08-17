@@ -267,8 +267,7 @@ vrecv_start:
             sscanf(_buffer+offset, _buffer, &count);
 
             // We only succeed if all characters in the response are matched
-            // and we are at the end of the response
-            if ((count == j) && (response[i-1] == (const char)c)) {
+            if (count == j) {
                 debug_if(dbg_on, "AT= %s\r\n", _buffer+offset);
                 // Reuse the front end of the buffer
                 memcpy(_buffer, response, i);
