@@ -157,8 +157,7 @@ int ATParser::vscanf(const char *format, va_list args)
         sscanf(_buffer+offset, _buffer, &count);
 
         // We only succeed if all characters in the response are matched
-        // and we are at the end of the response
-        if ((count == j) && (format[i-1] == (const char)c)) {
+        if (count == j) {
             // Store the found results
             vsscanf(_buffer+offset, format, args);
             return j;
