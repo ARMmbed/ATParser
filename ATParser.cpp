@@ -201,8 +201,8 @@ vrecv_start:
         int offset = 0;
 
         while (response[i]) {
-            if (memcmp(&response[i+1-_recv_delim_size], _recv_delimiter, _recv_delim_size) == 0) {
-                i++;
+            if (strncmp(&response[i], _recv_delimiter, _recv_delim_size) == 0) {
+                i += _recv_delim_size;
                 break;
             } else if (response[i] == '%' && response[i+1] != '%' && response[i+1] != '*') {
                 _buffer[offset++] = '%';
