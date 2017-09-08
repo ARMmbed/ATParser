@@ -257,6 +257,16 @@ public:
     void oob(const char *prefix, mbed::Callback<void()> func);
 
     /**
+    * Process out-of-band data
+    *
+    * Process out-of-band data in the receive buffer. This function
+    * returns immediately if there is no data to process.
+    *
+    * @return true if oob data processed, false otherwise
+    */
+    bool process_oob(void);
+
+    /**
     * Attach a callback for out-of-band data
     *
     * @param prefix string on when to initiate callback
