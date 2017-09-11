@@ -349,3 +349,41 @@ void ATParser::oob(const char *prefix, Callback<void()> cb)
     oob.cb = cb;
     _oobs.push_back(oob);
 }
+
+bool ATParser::process_oob()
+{
+    if (!_serial->readable()) {
+        return false;
+    }
+
+    int i = 0;
+    while (true) {
+        // Receive next character
+        int c = getc();
+        if (c < 0) {
+            return false;
+        }
+        _buffer[i++] = c;
+        _buffer[i] = 0;
+
+        // Check for oob data
+        for (unsigned int j = 0; j < _oobs.size(); j++) {
+            if (i == (int)_oobs[j].len && memcmp(
+                    _oobs[j].prefix, _buffer, _oobs[j].len) == 0) {
+                debug_if(dbg_on, "AT! %s\r\n", _oobs[j].prefix);
+                _oobs[j].cb();
+                return true;
+            }
+        }
+
+        // Clear the buffer when we hit a newline or ran out of space
+        // running out of space usually means we ran into binary data
+        if (i+1 >= _buffer_size ||
+            strcmp(&_buffer[i-_recv_delim_size], _recv_delimiter) == 0) {
+
+            debug_if(dbg_on, "AT< %s", _buffer);
+            i = 0;
+        }
+    }
+
+}
