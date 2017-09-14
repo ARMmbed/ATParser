@@ -27,6 +27,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "cmsis.h"
+
 /** A templated software ring buffer
  *
  * Example:
@@ -130,8 +132,9 @@ public:
 template <class T>
 inline void MyBuffer<T>::put(T data)
 {
-    _buf[_wloc++] = data;
-    _wloc %= (_size-1);
+    _buf[_wloc] = data;
+    __DSB();
+    _wloc = (_wloc + 1) % (_size-1);
     
     return;
 }
@@ -139,8 +142,9 @@ inline void MyBuffer<T>::put(T data)
 template <class T>
 inline T MyBuffer<T>::get(void)
 {
-    T data_pos = _buf[_rloc++];
-    _rloc %= (_size-1);
+    T data_pos = _buf[_rloc];
+    __DSB();
+    _rloc = (_rloc + 1) % (_size-1);
     
     return data_pos;
 }
