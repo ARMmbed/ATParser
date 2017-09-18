@@ -114,7 +114,7 @@ public:
     /**
     * Allows timeout to be changed between commands
     *
-    * @param timeout timeout of the connection
+    * @param timeout timeout of the connection in ms
     */
     void setTimeout(int timeout) {
         _timeout = timeout;

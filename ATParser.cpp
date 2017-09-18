@@ -67,10 +67,10 @@ int ATParser::write(const char *data, int size)
     int i = 0;
     for ( ; i < size; i++) {
         if (putc(data[i]) < 0) {
-            return -1;
+            break;
         }
     }
-    return i;
+    return (i == 0) ? -1 : i;
 }
 
 int ATParser::read(char *data, int size)
@@ -79,11 +79,12 @@ int ATParser::read(char *data, int size)
     for ( ; i < size; i++) {
         int c = getc();
         if (c < 0) {
-            return -1;
+            break;
+        } else {
+            data[i] = c;
         }
-        data[i] = c;
     }
-    return i;
+    return (i == 0) ? -1 : i;
 }
 
 
