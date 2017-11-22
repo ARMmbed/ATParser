@@ -20,6 +20,8 @@
 
 #include "ATParser.h"
 #include "mbed_debug.h"
+#include "mbed.h"
+
 
 
 // getc/putc handling with timeouts
@@ -185,8 +187,17 @@ bool ATParser::vsend(const char *command, va_list args)
     }
 
     debug_if(dbg_on, "AT> %s\r\n", _buffer);
+    //debug_if(!dbg_on, "=====================================\r\n");
+    //debug_if(!dbg_on, "AT>>> %s\r\n", _buffer);
+                
     return true;
 }
+
+int ATParser::getoob(){
+
+    return _oobs[0].len;
+}
+
 
 bool ATParser::vrecv(const char *response, va_list args)
 {
@@ -219,7 +230,7 @@ vrecv_start:
         _buffer[offset++] = '%';
         _buffer[offset++] = 'n';
         _buffer[offset++] = 0;
-
+        //printf("###### i = %d, offset = %d\r\n",i,offset);
         // To workaround scanf's lack of error reporting, we actually
         // make two passes. One checks the validity with the modified
         // format string that only stores the matched characters (%n).
@@ -228,7 +239,7 @@ vrecv_start:
         // We keep trying the match until we succeed or some other error
         // derails us.
         int j = 0;
-
+        
         while (true) {
             // Recieve next character
             int c = getc();
@@ -240,32 +251,54 @@ vrecv_start:
 
             // Check for oob data
             for (int k = 0; k < _oobs.size(); k++) {
-                if (j == _oobs[k].len && memcmp(
-                        _oobs[k].prefix, _buffer+offset, _oobs[k].len) == 0) {
-                    debug_if(dbg_on, "AT! %s\r\n", _oobs[k].prefix);
-                    _oobs[k].cb();
-
-                    // oob may have corrupted non-reentrant buffer,
-                    // so we need to set it up again.
-                    // Use goto to save stack usage rather than a
-                    // recursive approach.
-                    goto vrecv_start;
+                //debug_if(dbg_on,"\tAT:OOB %d,%d:%s \n",j, _oobs[k].len, _buffer+offset);
+                //debug_if(true, "\tAT:OOB %d,%d:%s \n",j, _oobs[0].len, _buffer+offset);
+                
+                if(t==true){
+                    //if (j == _oobs[k].len && memcmp(
+                    if ((j == _oobs[k].len) && memcmp(
+                            _oobs[k].prefix, _buffer+offset, _oobs[k].len) == 0) {
+                        debug_if(dbg_on, "\n>>>>>>>>>>>>>>>>>>>>>>!!!!!!!!!!!!!!!!!!!AT:OOB GET: %s\r\n", _oobs[k].prefix);
+                        t= false;
+                        //Thread thread;
+                        //thread.start(_oobs[k].cb);
+                        _oobs[k].cb();
+                        t= true;
+                        // oob may have corrupted non-reentrant buffer,
+                        // so we need to set it up again.
+                        // Use goto to save stack usage rather than a
+                        // recursive approach.
+                        goto vrecv_start;
+                    }
                 }
+
+
             }
 
             // Check for match
             int count = -1;
+
             sscanf(_buffer+offset, _buffer, &count);
+
+            // TBD. Unmask below to deep debugging all details of at parsing.
+            //debug_if(dbg_on,"-AT>>>%d,%d>>> %s ||| %s  (\%c,%x)\r\n",count, j, _buffer, _buffer+offset, c, c);
 
             // We only succeed if all characters in the response are matched
             if (count == j) {
-                debug_if(dbg_on, "AT= %s\r\n", _buffer+offset);
+            //if (count !=-1) {
+                //printf("--------------------------------------------\n");
+
+                //debug_if(dbg_on, "1AT>>> %s ||| %s\r\n", _buffer, _buffer+offset);
+                debug_if(dbg_on, "1AT< %s\r\n", _buffer+offset);
+                //debug_if(!dbg_on, "AT< %s\r\n", _buffer+offset);
+                //debug_if(!dbg_on, "--------------------------------------\r\n");
                 // Reuse the front end of the buffer
                 memcpy(_buffer, response, i);
                 _buffer[i] = 0;
 
                 // Store the found results
                 vsscanf(_buffer+offset, _buffer, args);
+
 
                 // Jump to next line and continue parsing
                 response += i;
@@ -276,11 +309,12 @@ vrecv_start:
             // running out of space usually means we ran into binary data
             if (j+1 >= _buffer_size - offset ||
                 strcmp(&_buffer[offset + j-_delim_size], _delimiter) == 0) {
-
-                debug_if(dbg_on, "AT< %s", _buffer+offset);
+                debug_if(dbg_on, "2AT< %s", _buffer+offset);
+                //debug_if(!dbg_on, "AT< %s\r\n", _buffer+offset);
                 j = 0;
             }
         }
+        //if(1) debug_if(dbg_on, "2AT< %s", _buffer+offset);
     }
 
     return true;

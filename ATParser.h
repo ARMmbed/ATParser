@@ -64,7 +64,7 @@ private:
         mbed::Callback<void()> cb;
     };
     std::vector<oob> _oobs;
-
+    bool t;
 public:
     /**
     * Constructor
@@ -74,13 +74,14 @@ public:
     * @param timeout timeout of the connection
     * @param delimiter string of characters to use as line delimiters
     */
-    ATParser(BufferedSerial &serial, const char *delimiter = "\r\n", int buffer_size = 256, int timeout = 8000, bool debug = false) :
+    ATParser(BufferedSerial &serial, const char *delimiter = "\r\n", int buffer_size = 2048, int timeout = 4000, bool debug = false) :
         _serial(&serial),
         _buffer_size(buffer_size) {
         _buffer = new char[buffer_size];
         setTimeout(timeout);
         setDelimiter(delimiter);
         debugOn(debug);
+        t =true;
     }
 
     /**
@@ -89,6 +90,7 @@ public:
     ~ATParser() {
         delete [] _buffer;
     }
+
 
     /**
     * Allows timeout to be changed between commands
@@ -132,6 +134,7 @@ public:
     bool send(const char *command, ...);
     bool vsend(const char *command, va_list args);
 
+    int getoob();
     /**
     * Recieve an AT response
     *
