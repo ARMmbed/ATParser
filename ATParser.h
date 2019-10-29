@@ -176,9 +176,9 @@ public:
     bool vsend(const char *command, va_list args);
 
     /**
-    * Recieve an AT response
+    * Receive an AT response
     *
-    * Recieves a formatted response using scanf style formatting
+    * Receives a formatted response using scanf style formatting
     * @see ::scanf
     *
     * Responses are parsed line at a time using the specified delimiter.
